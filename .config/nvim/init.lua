@@ -112,14 +112,6 @@ vim.o.mouse = 'a'
 -- Don't show the mode, since it's already in the status line
 vim.o.showmode = false
 
--- Sync clipboard between OS and Neovim.
---  Schedule the setting after `UiEnter` because it can increase startup-time.
---  Remove this option if you want your OS clipboard to remain independent.
---  See `:help 'clipboard'`
-vim.schedule(function()
-  vim.o.clipboard = 'unnamedplus'
-end)
-
 -- Enable break indent
 vim.o.breakindent = true
 
@@ -195,6 +187,108 @@ vim.keymap.set('t', '<Esc><Esc>', '<C-\\><C-n>', { desc = 'Exit terminal mode' }
 -- vim.keymap.set('n', '<right>', '<cmd>echo "Use l to move!!"<CR>')
 -- vim.keymap.set('n', '<up>', '<cmd>echo "Use k to move!!"<CR>')
 -- vim.keymap.set('n', '<down>', '<cmd>echo "Use j to move!!"<CR>')
+
+--[[
+
+{{{{
+
+There are things I hate so much about neovim:
+
+]]
+-- https://www.reddit.com/r/neovim/comments/13585hy/trying_to_disable_autocomments_on_new_line_eg/
+vim.cmd 'autocmd BufEnter * set formatoptions-=cro'
+vim.cmd 'autocmd BufEnter * setlocal formatoptions-=cro'
+
+--[[
+syncing clipboard between OS and neovim is okay, but i don't want deletes to destroy
+my actual paste buffer
+
+https://vi.stackexchange.com/questions/48414/how-do-i-yank-only-when-deleting-meaningful-text
+
++-----------------------------------------+
+| visual deleting with d will yank        |
+| visual deleting with D will not yank    |
+| every other delete will not yank        |
++-----------------------------------------+
+
+-- Sync clipboard between OS and Neovim.
+--  Schedule the setting after `UiEnter` because it can increase startup-time.
+--  Remove this option if you want your OS clipboard to remain independent.
+--  See `:help 'clipboard'`
+--vim.schedule(function()
+--  vim.o.clipboard = 'unnamedplus'
+--end)
+]]
+
+--- AI GENERATED SLOP {{{{
+
+-- 1. TURN OFF NATIVE SYNC
+-- This stops Neovim's C-core from instantly destroying the OS clipboard on deletes.
+vim.opt.clipboard = ''
+
+-- We use this state to track the last legitimate yank or external copy
+local safe_text = ''
+local safe_type = 'v'
+
+-- Helper to manually pull external copies (from your browser) into Neovim
+local function sync_from_os()
+  local os_text = vim.fn.getreg '+'
+  -- If the OS clipboard has new text from outside Neovim, sync it in!
+  if os_text ~= safe_text and os_text ~= '' then
+    safe_text = os_text
+    safe_type = vim.fn.getregtype '+'
+    vim.fn.setreg('"', safe_text, safe_type)
+  end
+end
+
+-- 2. Hook FocusGained to catch when you alt-tab back from another app
+vim.api.nvim_create_autocmd('FocusGained', {
+  group = vim.api.nvim_create_augroup('ManualClipboardIn', { clear = true }),
+  callback = sync_from_os,
+})
+
+-- 3. Hook TextYankPost to handle internal Neovim actions
+vim.api.nvim_create_autocmd('TextYankPost', {
+  group = vim.api.nvim_create_augroup('ManualClipboardOut', { clear = true }),
+  callback = function()
+    local event = vim.v.event
+
+    if event.regname == '_' then
+      return
+    end
+
+    if event.operator == 'y' then
+      -- ON YANK: Save the text, and manually push it out to the OS clipboard
+      safe_text = vim.fn.getreg '"'
+      safe_type = vim.fn.getregtype '"'
+      vim.fn.setreg('+', safe_text, safe_type)
+    elseif event.operator == 'd' or event.operator == 'c' then
+      local is_visual = event.visual
+
+      -- you basically only want copy when d inside visual block or visual
+      if is_visual then
+        -- VISUAL 'd': Treat as a CUT! Save it and push to OS
+        safe_text = vim.fn.getreg '"'
+        safe_type = vim.fn.getregtype '"'
+        vim.fn.setreg('+', safe_text, safe_type)
+        return
+      end
+
+      -- ON DELETE: First, check if you copied something externally right before this
+      -- (Just in case FocusGained didn't trigger on your specific terminal)
+      sync_from_os()
+
+      -- Then, forcefully insert the safe copied text back into the paste buffer!
+      -- This ensures 'p' pastes your safe text, completely ignoring the garbage you just deleted.
+      vim.fn.setreg('"', safe_text, safe_type)
+    end
+  end,
+})
+
+vim.keymap.set('x', 'D', '"_D', { noremap = true, desc = 'Delete without yanking' })
+
+--- AI GENERATED SLOP OVER }}}}
+--- HATE OVER }}}}
 
 -- Keybinds to make split navigation easier.
 --  Use CTRL+<hjkl> to switch between windows
@@ -292,7 +386,7 @@ require('lazy').setup({
     end,]]
   },
 
-  {
+  --[[{
     'colomb8/rambo.nvim',
     config = function()
       require('rambo').setup {
@@ -300,7 +394,7 @@ require('lazy').setup({
         -- c_right_mode = 'bow', -- 'bow' or 'eow'
       }
     end,
-  },
+  },]]
 
   {
     'nikschaefer/recfiles.nvim',
