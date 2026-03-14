@@ -9,25 +9,20 @@ vec4 default_post_processing(vec4 c);
 vec4 window_shader() {
     vec2 texsize = textureSize(tex, 0);
 
-    // Note: texture() is the correct standard for GLSL 330 instead of texture2D()
     vec4 color = texture(tex, texcoord / texsize);
 
-    // --- Anti-Blue Light Filter Settings ---
-    // RGB multipliers (1.0 = 100%, lower values reduce that color)
-    // 
-    // Presets to choose from:
-    // vec3 night_color = vec3(1.0, 0.90, 0.75); // Light filtering (~5000K)
-    // vec3 night_color = vec3(1.0, 0.82, 0.55); // Medium filtering (~4000K)
-    vec3 night_color = vec3(1.0, 0.70, 0.28); // Heavy filtering (~3000K)
-
-    //vec3 night_color = vec3(1.0, 0.82, 0.55); // Currently set to Medium
-
-    // Tint the window by multiplying the RGB channels by our filter
+#if 0
+	// mexico
+    vec3 night_color = vec3(1.0, 0.70, 0.28);
     color.rgb *= night_color;
+#else
+	// greyscale
+	float gray = dot(color.rgb, vec3(0.2126, 0.7152, 0.0722));
+	color = vec4(mix(color.rgb, vec3(gray), 0.7), color.a);
+#endif
 
-    // Apply the window opacity to all channels (RGBA)
+
     color *= opacity;
-
     return default_post_processing(color);
 }
 
