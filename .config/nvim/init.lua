@@ -374,7 +374,20 @@ require('lazy').setup({
     'stevearc/oil.nvim',
     ---@module 'oil'
     ---@type oil.SetupOpts
-    opts = {},
+    opts = {
+      columns = {
+        'icon',
+        { 'mtime', format = '%Y-%m-%d %H:%M' },
+      },
+
+      -- https://github.com/stevearc/oil.nvim?tab=readme-ov-file#options
+      view_options = {
+        sort = {
+          { 'mtime', 'desc' },
+          { 'name', 'asc' },
+        },
+      },
+    },
     -- Optional dependencies
     dependencies = { { 'nvim-mini/mini.icons', opts = {} } },
     -- dependencies = { "nvim-tree/nvim-web-devicons" }, -- use if you prefer nvim-web-devicons
