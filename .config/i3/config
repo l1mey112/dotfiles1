@@ -70,8 +70,6 @@ set $mod Mod4
 # is used in the bar {} block below.
 font pango:Terminus (TTF) 16
 
-exec_always --no-startup-id dunst
-
 # This font is widely installed, provides lots of unicode glyphs, right-to-left
 # text rendering and scalability on retina/hidpi displays (thanks to pango).
 #font pango:DejaVu Sans Mono 8
@@ -90,7 +88,10 @@ exec --no-startup-id xss-lock --transfer-sleep-lock -- i3lock -euc 111111 --nofo
 # NetworkManager is the most popular way to manage wireless networks on Linux,
 # and nm-applet is a desktop environment-independent system tray GUI for it.
 exec --no-startup-id nm-applet
+
+exec_always --no-startup-id dunst
 exec --no-startup-id picom -b
+exec --no-startup-id ~/.automount.bash
 
 # Use Mouse+$mod to drag floating windows to their wanted position
 floating_modifier $mod
