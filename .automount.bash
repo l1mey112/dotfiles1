@@ -13,8 +13,14 @@ echo $$ > $pidfile
 trap "rm -f $pidfile" EXIT
 
 udevadm monitor --udev --subsystem-match=block | while read -r _ _ action dev _; do
-    [[ $action != add ]] && continue
     node=/dev/$(basename "$dev")
-	doas mount -o rw,umask=000 "$node" ~/mnt2 && notify-send "mounted $node"
+	case "$action" in
+		"add")
+			doas mount -o rw,umask=000 "$node" ~/mnt2 && notify-send "mounted $node"
+			;;
+		"remove")
+			notify-send "unmounted $node"
+			;;
+	esac
 done
 
