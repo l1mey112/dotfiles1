@@ -1,3 +1,23 @@
+/* based entirely on https://github.com/Dook97/firefox-qutebrowser-userchrome
+
+Enable user chrome:
+
+* in `about:config` set `toolkit.legacyUserProfileCustomizations.stylesheets` to `true`
+
+Disable the Nova theme:
+
+* in `about:config` set `browser.nova.enabled` to `false`
+
+Enable compact mode:
+
+1) in `about:config` set `browser.compactmode.show` to `true`
+2) in the customize toolbar menu set `density` to `compact`
+
+Via the customize toolbar menu remove firefox view (the top-left corner icon)
+
+Enable dark theme in settings.
+
+ */
 :root {
 	--tab-active-bg-color: #285577;
 	--tab-inactive-bg-color: #222222;
