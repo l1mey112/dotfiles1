@@ -100,11 +100,15 @@ bindsym $mod+d exec --no-startup-id "rofi -theme solarized -font 'Terminus (TTF)
 # .desktop file. It is a wrapper around dmenu, so you need that installed.
 # bindcode $mod+40 exec --no-startup-id i3-dmenu-desktop
 
+# qute good keybinds, $mod instead of shift this time
+bindsym $mod+j workspace next
+bindsym $mod+k  workspace prev
+
 # change focus
-bindsym $mod+j focus left
-bindsym $mod+k focus down
-bindsym $mod+l focus up
-bindsym $mod+semicolon focus right
+#bindsym $mod+j focus left
+#bindsym $mod+k focus down
+#bindsym $mod+l focus up
+#bindsym $mod+semicolon focus right
 
 # alternatively, you can use the cursor keys:
 bindsym $mod+Left focus left
