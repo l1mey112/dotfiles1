@@ -101,8 +101,8 @@ bindsym $mod+d exec --no-startup-id "rofi -theme solarized -font 'Terminus (TTF)
 # bindcode $mod+40 exec --no-startup-id i3-dmenu-desktop
 
 # qute good keybinds, $mod instead of shift this time
-bindsym $mod+j workspace next
-bindsym $mod+k  workspace prev
+bindsym $mod+j workspace prev
+bindsym $mod+k  workspace next
 
 # change focus
 #bindsym $mod+j focus left
