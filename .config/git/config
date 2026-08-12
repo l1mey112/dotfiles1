@@ -2,3 +2,15 @@
 
 [alias]
 lg = log --graph --abbrev-commit --decorate --format=format:'%C(bold blue)%h%C(reset) - %C(bold green)(%ar)%C(reset) %C(white)%s%C(reset) %C(dim white)- %an%C(reset)%C(auto)%d%C(reset)' --all
+
+st = stash --include-untracked                # stash all
+sts = stash	--staged                          # stash staged
+stc = stash	--keep-index --include-untracked  # stash changes
+spop = stash pop --index
+
+# --include-untracked stashes changes from untracked files too
+# need --index so that a stash pop preserves staged and unstaged changes
+
+[user]
+        email = l-m@l-m.dev
+        name = l-m
