@@ -1,0 +1,10 @@
+#!/bin/sh
+# https://sw.kovidgoyal.net/kitty/invocation/
+# https://github.com/kovidgoyal/kitty/issues/6834
+# https://sources.debian.org/src/kitty/0.41.1-2%2Bdeb13u2/debian/rules/
+# https://bugs.debian.org/cgi-bin/pkgreport.cgi?src=kitty
+set -eu
+
+cache_dir="${XDG_CACHE_HOME:-$HOME/.cache}/kitty/pycache"
+mkdir -p "$cache_dir"
+exec env PYTHONPYCACHEPREFIX="$cache_dir" /usr/bin/kitty --single-instance "$@"

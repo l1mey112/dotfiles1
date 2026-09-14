@@ -85,8 +85,9 @@ floating_modifier $mod
 # or left-clicking anywhere into the window while holding the floating modifier.
 #tiling_drag modifier titlebar
 
-# start a terminal
-bindsym $mod+Return exec kitty
+# https://github.com/kovidgoyal/kitty/issues/6834
+# https://sources.debian.org/src/kitty/0.41.1-2%2Bdeb13u2/debian/rules/
+bindsym $mod+Return exec --no-startup-id /home/l-m/.kitty-fast
 
 # kill focused window
 bindsym $mod+Shift+q kill
