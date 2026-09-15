@@ -1,0 +1,49 @@
+#!/usr/bin/env python3
+
+# NOTE(liam): this is pretty sloppy, but who cares!
+#             purpose of `git s` is to reduce the review-slopburden by just staging all changes to
+#             - comments with "//"    ^\s*//
+#             - markdown/.md files
+
+COMMENT_PATTERNS = [rb"^\s*//", rb"^\s*#"]
+EXTENSIONS = {".md"}
+
+# ------------------------------------------------
+
+"""Stage comment-only hunks and .md files (plus extensions passed as args); skip submodules."""
+import argparse, os, re, shutil, subprocess, sys
+comment_patterns = [re.compile(pattern) for pattern in COMMENT_PATTERNS]
+parser = argparse.ArgumentParser(description=__doc__)
+parser.add_argument("extensions", nargs="*", help="extra whole-file extensions, e.g. .txt .rst")
+extensions = EXTENSIONS | set(parser.parse_args().extensions)
+def git(*args, data=None):
+    return subprocess.check_output(["git", "--literal-pathspecs", *args], input=data)
+if not shutil.which("filterdiff"):
+    sys.exit("git s: install patchutils (filterdiff) first")
+os.chdir(os.fsdecode(git("rev-parse", "--show-toplevel")[:-1]))
+if git("ls-files", "--unmerged", "-z"):
+    sys.exit("git s: resolve merge conflicts first")
+submodules = {entry.split(b"\t", 1)[1] for entry in git("ls-files", "--stage", "-z").split(b"\0")
+              if entry.startswith(b"160000 ")}
+paths = set(git("ls-files", "--modified", "--others", "--exclude-standard", "-z").split(b"\0")) - submodules
+files = {p for p in paths if p and os.path.splitext(os.fsdecode(p))[1] in extensions}
+if files:
+    git("add", "-A", "--pathspec-from-file=-", "--pathspec-file-nul", data=b"\0".join(files) + b"\0")
+diff = git("diff", "--no-color", "--no-ext-diff", "--no-textconv", "--no-renames",
+           "--no-relative", "--src-prefix=a/", "--dst-prefix=b/", "-U0", "--inter-hunk-context=0",
+           "--ignore-submodules=all", "--diff-filter=AMD")
+selected = []
+for file_diff in re.split(rb"(?m)(?=^diff --git )", diff):
+    header, *hunks = re.split(rb"(?m)(?=^@@ )", file_diff)
+    if re.search(rb"(?m)^(?:.* mode |index \S+ )(?:120000|160000)$", header):
+        continue  # Symlinks/type changes aren't comments.
+    keep = []
+    for number, hunk in enumerate(hunks, 1):
+        # ponytail: line regexes only; syntax-aware comments would need a language parser.
+        changes = [line[1:] for line in hunk.split(b"\n") if line.startswith((b"+", b"-"))]
+        if changes and all(any(pattern.match(line) for pattern in comment_patterns) for line in changes):
+            keep.append(str(number))
+    if keep:
+        patch = subprocess.check_output(["filterdiff", "--hunks=" + ",".join(keep)], input=file_diff)
+        selected.append(re.sub(rb"(?m)^(?:old|new) mode .*\n", b"", patch))
+git("apply", "--cached", "--unidiff-zero", "--allow-empty", "--whitespace=nowarn", data=b"".join(selected))
