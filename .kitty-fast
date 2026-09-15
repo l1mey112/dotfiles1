@@ -7,4 +7,9 @@ set -eu
 
 cache_dir="${XDG_CACHE_HOME:-$HOME/.cache}/kitty/pycache"
 mkdir -p "$cache_dir"
+
+# NOTE: you MUST start picom before the first kitty because --single-instance reuses the
+#       initial rendering state. if the first process started without picom, new windows
+#       will stay opaque
+
 exec env PYTHONPYCACHEPREFIX="$cache_dir" /usr/bin/kitty --single-instance "$@"
